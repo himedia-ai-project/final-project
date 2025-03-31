@@ -1,0 +1,25 @@
+services:
+  db:
+    image: ankane/pgvector # PGVector 지원 PostgreSQL 이미지 사용
+    container_name: pgvector_db
+    restart: always
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: .
+    container_name: fastapi_backend
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    environment:
+      PGVECTOR_CONNECTION_STRING: postgresql+psycopg2://postgres:1234@db:5432/mydb
+
+volumes:
+  pgvector_data:
