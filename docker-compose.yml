@@ -2,32 +2,47 @@
 
 services:
   db:
-    build:
-      context: ./backend/db
-      dockerfile: Dockerfile
+    image: postgres:13
+    container_name: postgresql
+    environment:
+      POSTGRES_USER: postgre
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: mydatabase
     ports:
-      - 3308:3306
+      - "5432:5432"
     volumes:
-      - ./db/db_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     networks:
-      - container_network
+      - backend
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - 8080:8080
+  pgvector:
+    image: ankane/pgvector:latest
+    container_name: pgvector
+    environment:
+      POSTGRES_USER: postgre # db와 동일한 설정
+      POSTGRES_PASSWORD: 1234 # db와 동일한 설정
+      POSTGRES_DB: test
     depends_on:
       - db
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/gigi?useSSL=false&serverTimeZone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 1234
     networks:
-      - container_network
+      - backend
+
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/gigi?useSSL=false&serverTimeZone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
+  #     SPRING_DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
+  #     SPRING_DATASOURCE_USERNAME: root
+  #     SPRING_DATASOURCE_PASSWORD: 1234
+  #   networks:
+  #     - container_network
 
   fastapi:
     build:
@@ -39,18 +54,18 @@ services:
     networks:
       - container_network
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - 3000:3000
-    depends_on:
-      - backend
-      - fastapi
-    networks:
-      - container_network
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   restart: always
+  #   ports:
+  #     - 3000:3000
+  #   depends_on:
+  #     - backend
+  #     - fastapi
+  #   networks:
+  #     - container_network
 
 networks:
   container_network:
