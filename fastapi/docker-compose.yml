@@ -1,12 +1,14 @@
+version: "3.8"
+
 services:
   db:
     image: ankane/pgvector # PGVector 지원 PostgreSQL 이미지 사용
     container_name: pgvector_db
     restart: always
     environment:
-      POSTGRES_DB: test
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: test # DB 이름을 'test'로 설정
+      POSTGRES_USER: postgres # 사용자 이름을 'postgres'로 설정
+      POSTGRES_PASSWORD: 1234 # 비밀번호를 '1234'로 설정
     ports:
       - "5432:5432"
 
@@ -19,7 +21,5 @@ services:
     ports:
       - "8000:8000"
     environment:
-      PGVECTOR_CONNECTION_STRING: postgresql+psycopg2://postgres:1234@db:5432/mydb
+      PGVECTOR_CONNECTION_STRING: postgresql+psycopg2://postgres:1234@db:5432/test # 수정된 DB 정보
 
-volumes:
-  pgvector_data:
