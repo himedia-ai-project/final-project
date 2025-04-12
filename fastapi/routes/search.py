@@ -1,7 +1,6 @@
 # routes/search.py
 from fastapi import APIRouter, HTTPException
 from services.query import search_documents_with_answer
-from services.storage import search_documents
 from models.schema import SearchQuery, SearchResponse
 
 router = APIRouter()
@@ -10,15 +9,17 @@ router = APIRouter()
 async def search_endpoint(query: SearchQuery):
     """벡터 저장소에서 유사 문서를 검색하고 답변을 생성"""
     try:
+        if not query.collection_name:
+            raise HTTPException(status_code=400, detail="Collection name is required")
+            
         results = await search_documents_with_answer(
             query_text=query.query,
             collection_name=query.collection_name,
             top_k=query.top_k
         )
         return results
-
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"검색 중 오류 발생: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # @router.post("/upload")
 # async def upload_endpoint(file: UploadFile = File(...), collection_name: str = Form("langchain")):

@@ -16,17 +16,17 @@ load_dotenv()
 # ✅ Upstage 임베딩 모델 한 번만 생성 (매번 생성하지 않음)
 embeddings = get_embeddings()
 
-def get_vector_store(collection_name="langchain", embeddings=None):
+def get_vector_store(collection_name, embeddings=None):
     """벡터 저장소 인스턴스를 반환합니다."""
     if not embeddings:
         embeddings = get_embeddings()
     
     # 환경 변수에서 데이터베이스 연결 정보 가져오기
-    POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
-    POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "1005")
+    POSTGRES_USER = os.getenv("POSTGRES_USER")
+    POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
     POSTGRES_DB = os.getenv("POSTGRES_DB", "gigigenie")
-    POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
-    POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
+    POSTGRES_HOST = os.getenv("POSTGRES_HOST")
+    POSTGRES_PORT = os.getenv("POSTGRES_PORT")
     
     print(f"Connecting to PostgreSQL: {POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}")
     print(f"Collection name: {collection_name}")
@@ -93,7 +93,7 @@ def get_vector_store(collection_name="langchain", embeddings=None):
 #     except Exception as e:
 #         raise Exception(f"SpringBoot API error: {str(e)}")
 
-async def search_documents(query_text: str, collection_name: str = "langchain", top_k: int = 3, embeddings=None) -> Dict[str, Any]:
+async def search_documents(query_text: str, collection_name: str, top_k: int = 3, embeddings=None) -> Dict[str, Any]:
     """벡터 저장소에서 유사 문서를 검색하고 답변을 생성합니다."""
     try:
         print(f"Searching documents for query: {query_text}")

@@ -3,7 +3,7 @@ from typing import Dict, Any
 from services.storage import search_documents
 from services.llm import create_answer_with_gemini
 
-async def search_documents_with_answer(query_text: str, collection_name: str = "langchain", top_k: int = 3) -> Dict[str, Any]:
+async def search_documents_with_answer(query_text: str, collection_name: str, top_k: int = 3) -> Dict[str, Any]:
     """벡터 저장소에서 유사 문서를 검색하고 답변을 생성"""
     try:
         # 벡터 저장소에서 유사 문서 검색
