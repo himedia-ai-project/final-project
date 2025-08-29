@@ -74,7 +74,6 @@ GOOGLE_REDIRECT_URL=http://localhost:3000/oauth/callback
 
 📂 frontend/.env
 ```env
-코드 복사
 REACT_APP_API_URL=http://localhost:8080
 REACT_APP_FRONT_URL=http://localhost:3000
 ```
