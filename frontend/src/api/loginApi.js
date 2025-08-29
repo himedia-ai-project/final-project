@@ -24,7 +24,7 @@ export const loginPost = async (id, password) => {
 
 // 로그아웃
 export const logoutPost = async () => {
-    const response = await axiosInstance.post(`/logout`);
+    const response = await axiosInstance.post(`/member/logout`);
     return response.data;
 };
 
@@ -56,16 +56,6 @@ export const checkEmailDuplicate = async (email) => {
     return response.data;
   } catch (error) {
     console.error("이메일 중복 체크 오류:", error);
-    if (error.response) {
-      // 서버에서 응답이 왔지만 에러인 경우
-      console.error("서버 응답:", error.response.data);
-    } else if (error.request) {
-      // 요청은 보내졌지만 응답이 없는 경우
-      console.error("서버 응답 없음:", error.request);
-    } else {
-      // 요청을 보내기 전에 발생한 에러
-      console.error("에러 발생:", error.message);
-    }
     throw error;
   }
 }; 

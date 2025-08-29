@@ -32,6 +32,7 @@ public class Category {
     @Column(name = "category_icon", nullable = false)
     private String categoryIcon;
 
+    @Builder.Default
     @JsonManagedReference
     @OneToMany(mappedBy = "category")
     private List<Product> products = new ArrayList<>();

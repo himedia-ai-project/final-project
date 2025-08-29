@@ -1,0 +1,302 @@
+.intro-page-container {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: white;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.intro-header {
+    width: 100%;
+    padding: 20px 0;
+    display: flex;
+    justify-content: center;
+    background-color: white;
+    box-shadow: 0 3px 10px rgba(0, 196, 113, 0.08);
+}
+
+.intro-logo {
+    height: 40px;
+}
+
+.intro-banner {
+    width: 100%;
+    max-width: 480px;
+    background-color: white;
+    padding: 20px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.intro-banner-content {
+    text-align: center;
+    margin-bottom: 40px;
+    width: 100%;
+}
+
+.intro-headline {
+    color: #333;
+    font-weight: 700;
+    margin-bottom: 16px;
+    position: relative;
+    display: inline-block;
+}
+
+.intro-headline::after {
+    display: none;
+}
+
+.intro-subheadline {
+    color: #5f6368;
+    margin-bottom: 24px;
+    padding: 0 16px;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+/* 슬라이더 영역 */
+.intro-slider {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 32px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.intro-slides-container {
+    display: flex;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    width: 100%;
+}
+
+.intro-slide {
+    min-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background-color: #fafffe;
+    border-radius: 16px;
+}
+
+.step-number {
+    color: #00c471;
+    margin-bottom: 16px;
+    margin-top: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    position: relative;
+    display: inline-block;
+    padding: 4px 12px;
+    background-color: rgba(0, 196, 113, 0.08);
+    border-radius: 12px;
+}
+
+.step-title {
+    margin-bottom: 28px;
+    font-weight: 600;
+    color: #333;
+}
+
+.step-image {
+    width: 100%;
+    max-width: 280px;
+    margin: 20px 0;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.step-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.step-desc {
+    color: #5f6368;
+    line-height: 1.5;
+    max-width: 500px;
+    font-size: 0.95rem;
+    text-align: center;
+    word-break: keep-all;
+    margin: 0 16px 20px;
+    padding: 0 8px;
+    white-space: pre-line;
+}
+
+/* 네비게이션 컨트롤 */
+.intro-navigation {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 28px;
+    position: relative;
+}
+
+.dot-indicators {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+.dot-indicator {
+    width: 10px;
+    height: 10px;
+    background-color: #e0e0e0;
+    border-radius: 50%;
+    margin: 0 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dot-indicator.active {
+    background-color: #00c471;
+    transform: scale(1.2);
+}
+
+.dot-indicator:hover {
+    background-color: #bbecd7;
+    transform: scale(1.1);
+}
+
+.arrow-controls {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 500px;
+    gap: 20px;
+}
+
+.arrow-btn {
+    min-width: 100px;
+    text-transform: none;
+    color: #00c471;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.arrow-btn:hover {
+    background-color: rgba(0, 196, 113, 0.08);
+}
+
+.arrow-btn:disabled {
+    color: #d0d0d0;
+}
+
+/* 하단 버튼 영역 */
+.intro-actions {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 30px 20px;
+    box-sizing: border-box;
+}
+
+.skip-intro-btn {
+    color: #5f6368;
+    text-transform: none;
+    transition: color 0.3s ease;
+    border-radius: 4px;
+}
+
+.skip-intro-btn:hover {
+    color: #333;
+}
+
+.final-step-buttons {
+    display: flex;
+    gap: 16px;
+}
+
+.login-btn {
+    background-color: #00c471;
+    color: white;
+    text-transform: none;
+    border-radius: 4px;
+    padding: 8px 24px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.login-btn:hover {
+    background-color: #00b369;
+}
+
+.start-service-btn {
+    background-color: #495057;
+    color: white;
+    text-transform: none;
+    padding: 8px 24px;
+    border-radius: 4px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.start-service-btn:hover {
+    background-color: #343a40;
+}
+
+.close-intro-btn {
+    color: #00c471;
+    text-transform: none;
+    transition: color 0.3s ease;
+    border-radius: 4px;
+}
+
+.close-intro-btn:hover {
+    color: #00a862;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 480px) {
+    .intro-banner {
+        padding: 24px 16px;
+    }
+
+    .step-image {
+        width: 90%;
+        height: 180px;
+    }
+
+    .arrow-controls {
+        max-width: 100%;
+    }
+
+    .intro-actions {
+        padding: 0;
+    }
+
+    .final-step-buttons {
+        gap: 12px;
+    }
+
+    .login-btn, .start-service-btn {
+        padding: 6px 20px;
+    }
+}

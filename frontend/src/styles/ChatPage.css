@@ -1,12 +1,12 @@
 .chat-container {
   display: flex;
   height: 100vh;
-  background: #e0e0e0;
+  background: #f2f4f8;
 }
 
 .sidebar {
   width: 250px;
-  background-color: #e0e0e0;
+  background-color: #f2f4f8;
   padding: 10px;
 }
 
@@ -18,17 +18,22 @@
   border-radius: 0;
   margin: 0;
   overflow: hidden;
-  border: 1px solid #ccc;
+  border: 1px solid #e9ecef;
+  height: 100vh;
 }
 
 .chat-header {
-  padding: 15px;
-  font-weight: bold;
-  border-bottom: 1px solid #ccc;
-  background-color: #e0e0e0;
-  color: black;
-  text-align: left;
-  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: #00c471;
+  color: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.exit-button {
+  color: white !important;
 }
 
 .chat-messages {
@@ -52,24 +57,36 @@
 
 .user {
   align-self: flex-end;
-  background-color: #f3eded;
-  color: black;
+  background-color: #e6f7f1;
+  color: #333;
   border-radius: 10px;
   border-bottom-right-radius: 0;
 }
 
 .bot {
   align-self: flex-start;
-  background-color: #e0dbdb;
-  color: black;
+  background-color: #f1f3f5;
+  color: #333;
   border-radius: 10px;
   border-bottom-left-radius: 0;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+}
+
+.loading-spinner {
+  color: #00c471;
+  margin-right: 8px;
 }
 
 .chat-input {
   display: flex;
   padding: 15px;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid #e9ecef;
   background-color: white;
 }
 
@@ -84,7 +101,7 @@
   flex: 1;
   width: 100%;
   padding: 12px 45px 12px 15px;
-  border: 1px solid #ccc;
+  border: 1px solid #dee2e6;
   border-radius: 5px;
   outline: none;
   font-size: 14px;
@@ -93,7 +110,7 @@
 .input-send-button {
   position: absolute;
   right: 8px;
-  background-color: #6c757d;
+  background-color: #00c471;
   color: white;
   border: none;
   border-radius: 50%;
@@ -108,19 +125,116 @@
 }
 
 .input-send-button:hover {
-  background-color: #5a6268;
+  background-color: #00a862;
 }
 
 .input-container input:disabled {
-  background-color: #f5f5f5;
+  background-color: #f8f9fa;
   cursor: not-allowed;
 }
 
 .input-send-button:disabled {
-  background-color: #cccccc;
+  background-color: #adb5bd;
   cursor: not-allowed;
 }
 
-.message.bot .MuiCircularProgress-root {
-  color: #666666;
+/* 대화창 나가기 다이얼로그 스타일 */
+.exit-dialog-paper {
+  padding: 20px;
+  min-width: 280px;
+}
+
+.exit-dialog-title {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.exit-dialog-content {
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.dialog-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.save-button.MuiButton-root {
+  background-color: #00c471;
+  color: white;
+  min-width: 80px;
+  height: 36px;
+}
+
+.save-button.MuiButton-root:hover {
+  background-color: #00a862;
+}
+
+.exit-button-dialog.MuiButton-root {
+  background-color: #dc3545;
+  color: white;
+  min-width: 80px;
+  height: 36px;
+}
+
+.exit-button-dialog.MuiButton-root:hover {
+  background-color: #bb2d3b;
+}
+
+.cancel-button {
+  color: #6c757d;
+  min-width: 80px;
+  height: 36px;
+}
+
+.registration-container {
+  position: absolute;
+  bottom: 80px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.registration-text {
+  color: #495057;
+  font-size: 14px;
+}
+
+.registration-button {
+  background-color: #00c471;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.registration-button:hover {
+  background-color: #00a862;
+}
+
+/* CSS 파일에 이전 대화 내역 관련 스타일 추가 */
+.message.system {
+  text-align: center;
+  background-color: #f5f5f5;
+  color: #555;
+  padding: 8px 16px;
+  margin: 8px auto;
+  max-width: 80%;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.history-message {
+  opacity: 0.8;
+  border: 1px dashed #ddd;
 }

@@ -27,9 +27,11 @@ export const addFavorite = async (memberId, productId) => {
 
 export const deleteFavorite = async (memberId, productId) => {
     try {
-        const response = await axiosInstance.post(`/favorite/delete`, {
-            memberId,
-            productId
+        const response = await axiosInstance.delete(`/favorite/delete`, {
+            data: {
+                memberId,
+                productId
+            }
         });
         return response.data;
     } catch (error) {

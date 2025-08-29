@@ -4,13 +4,20 @@
 }
 
 .search-bar {
-  background-color: #f0f0f0;
-  border-radius: 24px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   padding: 2px 16px;
   margin-bottom: 24px;
   max-width: 500px;
+  border: 1px solid #dee2e6;
+  transition: all 0.2s ease;
+}
+
+.search-bar:focus-within {
+  border-color: #adb5bd;
+  box-shadow: 0 0 0 2px rgba(173, 181, 189, 0.2);
 }
 
 .search-bar input {
@@ -18,8 +25,42 @@
   background: transparent;
   outline: none;
   width: 100%;
-  padding: 8px 12px;
+  padding: 10px 12px;
   font-size: 14px;
+  color: #333333;
+}
+
+.search-bar input::placeholder {
+  color: #6c757d;
+}
+
+.search-select {
+  margin-left: 10px;
+  padding: 6px 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background-color: white;
+  font-size: 14px;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+}
+
+.search-select:hover, .search-select:focus {
+  border-color: #adb5bd;
+}
+
+.search-select option {
+  font-size: 14px;
+  padding: 8px;
 }
 
 .device-grid {
@@ -48,7 +89,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #e9ecef;
   border-radius: 8px;
   background-color: #ffffff;
   margin-bottom: 8px;
@@ -56,13 +97,8 @@
 }
 
 .device-icon {
-  font-size: 54px;
-  color: #555555;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 54px;
+  height: 54px;
 }
 
 .favorite-icon {
@@ -77,13 +113,12 @@
 }
 
 .favorite-icon.active {
-  color: red;
+  color: #ff5b5c;
 }
 
 .favorite-icon:hover {
-  color: #f44336;
+  color: #ff5b5c;
 }
-
 
 .device-name {
   font-size: 12px !important;

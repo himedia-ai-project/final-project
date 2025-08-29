@@ -9,3 +9,13 @@ export const productList = async () => {
         throw error;
     }
 };
+
+export const searchProducts= async (query) => {
+    try {
+        const response = await axiosInstance.get(`/product/search?query=${query}`);
+        return response.data;
+    } catch (error) {
+        console.error("제품 특징기반 검색 실패:", error);
+        throw error;
+    }
+};

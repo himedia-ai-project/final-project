@@ -36,7 +36,7 @@ public class FavoriteController {
     }
 
     @Operation(summary = "즐겨찾기 삭제")
-    @PostMapping("/delete")
+    @DeleteMapping("/delete")
     public void deleteFavorite(@RequestBody FavoriteRequest request) {
         log.info("즐겨찾기 삭제 요청: {}", request);
         favoriteService.deleteFavorite(request);

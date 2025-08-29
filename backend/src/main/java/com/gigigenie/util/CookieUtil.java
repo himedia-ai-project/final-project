@@ -24,7 +24,7 @@ public class CookieUtil {
     public static void removeTokenCookie(HttpServletResponse response, String token) {
         ResponseCookie cookie = ResponseCookie.from(token, "")
                 .path("/")
-                .httpOnly(false)
+                .httpOnly(true)
                 .secure(true)
                 .sameSite("None")
                 .maxAge(0L)

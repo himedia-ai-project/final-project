@@ -1,15 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const storedUser = localStorage.getItem("user");
-const storedToken = localStorage.getItem("token");
-
 const initialState = {
-  isLogin: !!storedUser && !!storedToken,
+  isLogin: false,
   loading: false,
   error: null,
   message: null,
-  user: storedUser ? JSON.parse(storedUser) : null,
-  favoriteList: storedUser ? JSON.parse(storedUser).favoriteList || [] : [],
+  id: null,
+  user: null,
+  favoriteList: [],
+  recentList: [],
 };
 
 const loginSlice = createSlice({
@@ -24,14 +23,15 @@ const loginSlice = createSlice({
       state.isLogin = true;
       state.loading = false;
       state.error = null;
-      state.user = action.payload;
+      state.id = action.payload.id;
+      state.user = {
+        id: action.payload.id,
+        name: action.payload.name,
+        role: action.payload.role,
+      };
       state.message = action.payload.message;
       state.favoriteList = action.payload.favoriteList || [];
-      
-      localStorage.setItem("user", JSON.stringify({
-        ...action.payload,
-        favoriteList: action.payload.favoriteList || []
-      }));
+      state.recentList = action.payload.recentList || [];
     },
     loginFailure: (state, action) => {
       state.loading = false;
@@ -39,11 +39,10 @@ const loginSlice = createSlice({
     },
     logout: (state) => {
       state.isLogin = false;
+      state.id = null;
       state.user = null;
       state.favoriteList = [];
-      
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
+      state.recentList = [];
     },
     clearError: (state) => {
       state.error = null;
@@ -51,16 +50,21 @@ const loginSlice = createSlice({
     },
     updateFavorites: (state, action) => {
       state.favoriteList = action.payload;
-      
-      if (state.user) {
-        localStorage.setItem("user", JSON.stringify({
-          ...state.user,
-          favoriteList: action.payload
-        }));
-      }
+    },
+    updateRecents: (state, action) => {
+      state.recentList = action.payload;
     }
   },
 });
 
-export const { loginStart, loginSuccess, loginFailure, logout, clearError, updateFavorites } = loginSlice.actions;
+export const { 
+  loginStart, 
+  loginSuccess, 
+  loginFailure, 
+  logout, 
+  clearError, 
+  updateFavorites,
+  updateRecents
+} = loginSlice.actions;
+
 export default loginSlice.reducer;

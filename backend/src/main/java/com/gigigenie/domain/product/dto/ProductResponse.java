@@ -11,4 +11,5 @@ public class ProductResponse {
     private Integer id;
     private String name;
     private String icon;
+    private String url;
 }

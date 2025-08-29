@@ -1,0 +1,53 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/manulo
+    username: postgres
+    password: 1005
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 10000
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
+            scope:
+              - email
+              - profile
+
+app:
+  props:
+    jwt:
+      secret-key: 1234567890123456789012345678901234567890
+      access-token-expiration-period: 150
+      refresh-token-expiration-period: 1440
+
+    aws:
+      key:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      s3:
+        bucket-name: ${AWS_S3_BUCKET_NAME}
+        region: ${AWS_REGION}
+
+org:
+  file:
+    upload:
+      path: upload
+
+cors:
+  allowed-origins: http://localhost:3000,http://127.0.0.1:3000
+
+frontend:
+  redirect:
+    url: http://localhost:3000

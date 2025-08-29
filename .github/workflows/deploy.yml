@@ -8,7 +8,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -20,8 +19,8 @@ jobs:
           host: ${{ secrets.EC2_HOST_IP }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /home/ubuntu/CICD/CICD
-            sudo git pull origin main
-            sudo docker-compose down
-            sudo docker-compose up -d --build
-          
+            cd /home/ubuntu/manulo || exit 1
+            sudo git pull origin main || exit 1
+            sudo docker-compose down || true
+            sudo docker system prune -af || true
+            sudo docker-compose up -d --build || exit 1

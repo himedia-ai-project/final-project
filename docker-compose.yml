@@ -1,17 +1,25 @@
-# version: "3.8"
-
 services:
   db:
     build:
       context: ./backend/db
       dockerfile: Dockerfile
     ports:
-      - 3308:3306
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1005
+      POSTGRES_DB: manulo
     volumes:
-      - ./db/db_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - container_network
-
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    networks:
+      - container_network
+    restart: always
   backend:
     build:
       context: ./backend
@@ -21,24 +29,17 @@ services:
       - 8080:8080
     depends_on:
       - db
+      - redis
+    env_file:
+      - ./backend/.env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/gigi?useSSL=false&serverTimeZone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_DRIVER: com.mysql.cj.jdbc.Driver
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/manulo
+      SPRING_DATASOURCE_DRIVER: org.postgresql.Driver
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1005
+      SPRING_PROFILES_ACTIVE: prod
     networks:
       - container_network
-
-  fastapi:
-    build:
-      context: ./backend/fastapi
-      dockerfile: Dockerfile
-    restart: always
-    ports:
-      - 8000:8000
-    networks:
-      - container_network
-
   frontend:
     build:
       context: ./frontend
@@ -48,9 +49,12 @@ services:
       - 3000:3000
     depends_on:
       - backend
-      - fastapi
+    env_file:
+      - ./frontend/.env
     networks:
       - container_network
-
 networks:
   container_network:
+
+volumes:
+  postgres_data:

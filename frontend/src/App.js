@@ -3,19 +3,26 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { productList } from "./api/productApi";
+import axios from "axios";
+import { API_SERVER_HOST } from "./config/ApiConfig";
 import "./App.css";
 import ChatPage from "./pages/ChatPage";
 import DevicePage from "./pages/DevicePage";
+import IntroPage from "./pages/IntroPage";
 import Header from "./pages/Header";
 import LoginPage from "./pages/LoginPage";
 import SideLayout from "./pages/SideLayout";
+import ToastNotification from "./components/ToastNotification";
 import { setProducts } from "./redux/ProductSlice";
 import { loginSuccess } from "./redux/LoginSlice";
+import OAuth2Callback from "./components/OAuth2Callback";
+import { fetchNotifications } from "./api/notificationApi";
 
 function App() {
   const location = useLocation();
   const dispatch = useDispatch();
   const isLoginPage = location.pathname === "/login";
+  const isIntroPage = location.pathname === "/";
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isLogin, user } = useSelector((state) => state.login || {});
   const sidebarRef = useRef(null);
@@ -39,25 +46,38 @@ function App() {
     }
   }, [dispatch]);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
-  
-    if (storedUser && token) {
-      const user = JSON.parse(storedUser);
-      dispatch(loginSuccess({
-        id: user.id,
-        name: user.name,
-        role: user.role,
-        favoriteList: user.favoriteList || [],
-        message: "로그인 유지 중입니다.",
-      }));
+  const checkLoginStatus = useCallback(async () => {
+    if (isLogin) return;
+    
+    try {
+      const response = await axios.get(`${API_SERVER_HOST}/api/member/me`, {
+        withCredentials: true
+      });
+      
+      if (response.data.isLoggedIn) {
+        dispatch(loginSuccess({
+          id: response.data.id,
+          name: response.data.name,
+          role: response.data.role,
+          favoriteList: response.data.favoriteList || [],
+          recentList: response.data.recentList || []
+        }));
+      }
+    } catch (error) {
+      console.error("로그인 상태 확인 중 오류:", error);
     }
-  }, [dispatch]);
+  }, [isLogin, dispatch]);
 
   useEffect(() => {
-    if (isLogin) fetchProducts();
-  }, [isLogin, fetchProducts]);
+    checkLoginStatus();
+    fetchProducts();
+  }, [checkLoginStatus, fetchProducts]);
+
+  useEffect(() => {
+    if (isLogin && user && user.id) {
+      fetchNotifications();
+    }
+  }, [isLogin, user]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -91,12 +111,12 @@ function App() {
           height: "100vh",
           maxWidth: "480px",
           margin: "0 auto",
-          backgroundColor: "#f0f0f0",
+          backgroundColor: "#f9f9f9",
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {!isLoginPage && (
+        {(!isLoginPage && !isIntroPage) && (
           <Header
             isLoggedIn={isLogin}
             userRole={getUserRole()}
@@ -106,9 +126,11 @@ function App() {
 
         <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflow: "auto" }}>
           <Routes>
-            <Route path="/" element={<DevicePage />} />
+            <Route path="/" element={<IntroPage />} />
+            <Route path="/device" element={<DevicePage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/oauth2-callback" element={<OAuth2Callback />} />
           </Routes>
         </Box>
 
@@ -118,7 +140,7 @@ function App() {
             sx={{
               position: "fixed",
               top: "60px",
-              width: "250px",
+              width: "240px",
               height: "calc(100% - 60px)",
               transition: "right 0.3s ease",
               zIndex: 1300,
@@ -129,6 +151,7 @@ function App() {
           </Box>
         )}
       </Box>
+      <ToastNotification />
     </div>
   );
 }

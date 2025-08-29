@@ -1,11 +1,12 @@
 package com.gigigenie.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gigigenie.domain.member.dto.MemberDTO;
 import com.gigigenie.domain.member.enums.MemberRole;
-import com.gigigenie.security.MemberDTO;
 import com.gigigenie.util.JWTUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -37,13 +38,17 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         }
 
         // SecurityConfig와 일치하는 경로 패턴 - permitAll() 설정된 경로들
-//        if (path.startsWith("/api/member/") ||
-//                path.startsWith("/api/product/") ||
-//                path.startsWith("/api/test/")) {
-//            return true;
-//        }
-
-        if (path.startsWith("/api/")) {
+        if (path.equals("/api/member/login") ||
+                path.equals("/api/member/join") ||
+                path.equals("/api/member/check-email") ||
+                path.equals("/api/member/me") ||
+                path.equals("/api/member/refresh") ||
+                path.equals("/api/oauth2/") ||
+                path.equals("/oauth2/") ||
+                path.equals("/login/oauth2/code/") ||
+                path.equals("/api/product/search") ||
+                path.equals("/api/product/list") ||
+                (path.startsWith("/api/chat"))) {
             return true;
         }
 
@@ -71,19 +76,28 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         log.info("------------------JWTCheckFilter 시작------------------");
         log.info("요청 경로: {}", request.getServletPath());
 
-        String autHeaderStr = request.getHeader("Authorization");
-        log.info("Authorization 헤더: {}", autHeaderStr);
+        Cookie[] cookies = request.getCookies();
+        String accessToken = null;
 
-        if (autHeaderStr == null) {
-            log.info("Authorization 헤더 없음, 필터 통과");
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    accessToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        log.info("쿠키에서 추출된 accessToken: {}", accessToken != null ?
+                (accessToken.length() > 20 ? accessToken.substring(0, 20) + "..." : accessToken) : "없음");
+
+        if (accessToken == null) {
+            log.info("AccessToken 없음, 필터 통과");
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            String accessToken = autHeaderStr.substring(7).trim();
-            log.info("추출된 토큰: {}", accessToken.substring(0, 20) + "...");
-
             Map<String, Object> claims = jwtUtil.validateToken(accessToken);
             log.info("JWT claims: {}", claims);
 
@@ -93,6 +107,11 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             String name = (String) claims.get("name");
             String role = (String) claims.get("role");
             log.info("추출된 role: {}", role);
+
+            if (password == null || password.isEmpty()) {
+                password = "oauth2UserDummyPassword";
+                log.info("OAuth2 사용자를 위한 더미 비밀번호 설정");
+            }
 
             MemberRole memberRole = MemberRole.valueOf(role);
             MemberDTO memberDTO = new MemberDTO(id, email, password, name, memberRole);
@@ -123,7 +142,6 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             printWriter.println(msg);
             printWriter.close();
         }
-
-
     }
+
 }

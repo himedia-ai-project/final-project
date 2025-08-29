@@ -1,11 +1,11 @@
 package com.gigigenie.domain.member.service;
 
 import com.gigigenie.domain.member.dto.JoinRequestDTO;
+import com.gigigenie.domain.member.dto.MemberDTO;
 import com.gigigenie.domain.member.entity.Member;
 import com.gigigenie.domain.member.enums.MemberRole;
 import com.gigigenie.domain.member.repository.MemberRepository;
 import com.gigigenie.props.JwtProps;
-import com.gigigenie.security.MemberDTO;
 import com.gigigenie.util.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

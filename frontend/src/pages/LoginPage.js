@@ -2,9 +2,13 @@ import { Box, Button, TextField, Typography, Link, Alert } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import logo from "../images/gigigenie_logo.png";
+import logo from "../images/manulo_logo.png";
 import { loginStart, loginSuccess, loginFailure, clearError } from "../redux/LoginSlice";
 import { loginPost, joinPost, checkEmailDuplicate } from "../api/loginApi";
+import { favoriteList } from "../api/favoriteApi";
+import { getRecentProducts } from "../api/chatApi";
+import GoogleIcon from '@mui/icons-material/Google';
+import { API_SERVER_HOST } from "../config/ApiConfig";
 import "../styles/LoginPage.css";
 
 const LoginPage = () => {
@@ -88,37 +92,26 @@ const LoginPage = () => {
     try {
       dispatch(loginStart());
       const response = await loginPost(email, password);
-
-      localStorage.setItem("token", response.accessToken);
-      localStorage.setItem("user", JSON.stringify({
-        id: response.id,
-        name: response.name,
-        role: response.role,
-        favoriteList: response.favoriteList
-      }));
-
+      const favorites = await favoriteList(response.id);
+      const recents = await getRecentProducts();
+      
       dispatch(loginSuccess({
         id: response.id,
         name: response.name,
         role: response.role,
-        favoriteList: response.favoriteList,
+        favoriteList: favorites,
+        recentList: recents,
         message: "로그인에 성공했습니다."
       }));
-
-      navigate("/");
+      
+      navigate("/device");
     } catch (error) {
-      dispatch(loginFailure(error.message || "로그인에 실패했습니다."));
+      dispatch(loginFailure(error.response?.data?.message || "로그인에 실패했습니다."));
     }
   };
 
-  const handleGuestLogin = () => {
-    dispatch(loginSuccess({
-      id: null,
-      name: 'Guest',
-      role: ['GUEST'],
-      message: '게스트 로그인'
-    }));
-    navigate("/");
+  const handleContinueWithoutLogin = () => {
+    navigate("/device");
   };
 
   const handleJoin = async () => {
@@ -141,8 +134,10 @@ const LoginPage = () => {
       const response = await joinPost({ email, password, name });
       
       if (response && response.success) {
-        dispatch(loginSuccess({ message: "회원가입이 완료되었습니다. 로그인 해주세요." }));
-        navigate("/login");
+        dispatch(loginSuccess({ 
+          message: "회원가입이 완료되었습니다. 로그인 해주세요."
+        }));
+        setIsLogin(true);
       } else {
         dispatch(loginFailure(response?.message || "회원가입에 실패했습니다."));
       }
@@ -152,13 +147,17 @@ const LoginPage = () => {
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = `${API_SERVER_HOST}/oauth2/authorization/google`;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     isLogin ? handleLogin() : handleJoin();
   };
 
   const handleLogoClick = () => {
-    navigate("/");
+    navigate("/device");
   };
 
   return (
@@ -168,10 +167,9 @@ const LoginPage = () => {
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
             <img
               src={logo}
-              height="50px"
               alt="Logo"
               onClick={handleLogoClick}
-              style={{ cursor: "pointer" }}
+              className="login-logo"
             />
           </Box>
         </Box>
@@ -193,7 +191,42 @@ const LoginPage = () => {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit}>
+          {isLogin && (
+            <Box className="guest-button-container">
+              <Button
+                fullWidth
+                variant="outlined"
+                startIcon={<GoogleIcon />}
+                onClick={handleGoogleLogin}
+                className="google-button"
+                sx={{
+                  mb: 2,
+                  color: '#757575',
+                  borderColor: '#DADCE0',
+                  '&:hover': {
+                    borderColor: '#DADCE0',
+                    backgroundColor: '#F2F2F2',
+                  },
+                  height: '48px',
+                  textTransform: 'none',
+                  fontSize: '16px',
+                  fontWeight: 500,
+                }}
+              >
+                Google로 계속하기
+              </Button>
+            </Box>
+          )}
+          
+          {isLogin && (
+            <Box className="divider">
+              <Typography variant="body2" className="divider-text">
+                또는
+              </Typography>
+            </Box>
+          )}
+
+          <form onSubmit={handleSubmit} className="login-form">
             {!isLogin && (
               <TextField
                 fullWidth
@@ -249,12 +282,6 @@ const LoginPage = () => {
               type="submit"
               className="login-button"
               disabled={loading || (!isLogin && !!emailError)}
-              sx={{
-                backgroundColor: "#f4c542",
-                color: "black",
-                "&:hover": { backgroundColor: "#e0b73a" },
-                mb: 2,
-              }}
             >
               {loading ? "처리 중..." : (isLogin ? "로그인" : "회원가입")}
             </Button>
@@ -271,32 +298,29 @@ const LoginPage = () => {
                   dispatch(clearError());
                   setEmailError("");
                 }}
-                sx={{ color: "#f4c542" }}
+                className="link-text"
               >
                 {isLogin ? "회원가입" : "로그인"}
               </Link>
             </Typography>
           </Box>
 
-          {/* 로그인 화면에서만 보이도록 조건부 렌더링 추가 */}
           {isLogin && (
             <>
               <Box className="divider">
-                <Typography variant="body2" color="textSecondary">
+                <Typography variant="body2" className="divider-text">
                   또는
                 </Typography>
               </Box>
               
-              {/* 게스트 버튼을 form과 동일한 너비의 컨테이너로 감싸기 */}
-              <Box sx={{ width: '80%' }}>
+              <Box className="guest-button-container">
                 <Button
                   fullWidth
                   variant="contained"
                   className="guest-button"
-                  onClick={handleGuestLogin}
-                  sx={{ mt: 2 }}
+                  onClick={handleContinueWithoutLogin}
                 >
-                  게스트로 계속하기
+                  로그아웃 유지
                 </Button>
               </Box>
             </>

@@ -39,6 +39,7 @@ dependencies {
 
     // Jackson
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
     // validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -57,12 +58,20 @@ dependencies {
     implementation 'org.postgresql:postgresql'
     implementation 'dev.langchain4j:langchain4j-pgvector:0.28.0'
 
-    implementation 'org.apache.pdfbox:pdfbox:2.0.29'
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'redis.clients:jedis'
 
-    // LangChain4j
-//    implementation 'dev.langchain4j:langchain4j:0.28.0'
-//    implementation 'dev.langchain4j:langchain4j-open-ai:0.28.0'
-//    implementation 'dev.langchain4j:langchain4j-document-parser-apache-pdfbox:1.0.0-beta2'
+    // google
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    // aws s3
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+    // thumbnailator <- 이미지 크기 조절 및 썸네일 생성을 쉽게 할 수 있도록 지원하는 Java 라이브러리
+    implementation 'net.coobird:thumbnailator:0.4.19'
+
+    implementation 'org.apache.pdfbox:pdfbox:2.0.29'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
