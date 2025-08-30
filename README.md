@@ -12,7 +12,7 @@
 
 ## ✨ 주요 기능  
 - **설명서 업로드**: PDF 업로드 → 텍스트 청크 분리 → OpenAI 임베딩 저장  
-- **대화형 질의응답**: Redis 세션 컨텍스트 + pgvector 유사도 검색 + Gemini 응답 생성  
+- **대화형 질의응답**: Redis 세션 컨텍스트 + FAISS 유사도 검색 + OpenAI 응답 생성  
 - **제품 검색**: 제품명 키워드 검색 + 특징 기반 유사 제품 탐색  
 - **사용자 기능**: 회원가입/로그인 (JWT 기반), 즐겨찾기, 알림  
 
@@ -21,8 +21,8 @@
 ## 🛠 기술 스택
 - **Frontend**: React
 - **Backend**: Java, Spring Boot, Spring Security, JPA
-- **Database**: PostgreSQL, VectorDB((pgvector)
-- **AI**: OpenAI Embeddings, Google Gemini
+- **Database**: PostgreSQL, VectorDB((FAISS)
+- **AI**: OpenAI Embeddings, OpenAI
 - **Infra**: AWS EC2, S3, Docker, GitHub Actions
 
 ---
