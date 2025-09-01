@@ -1,0 +1,25 @@
+package com.gigigenie.config;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.client.WebClient;
+
+@Configuration
+@RequiredArgsConstructor
+public class RagClientConfig {
+
+    @Value("${rag.base-url}")
+    private String ragBaseUrl;
+
+    @Bean
+    public WebClient ragWebClient(WebClient.Builder baseBuilder) {
+        return baseBuilder
+            .baseUrl(ragBaseUrl)
+            .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .build();
+    }
+}
