@@ -12,12 +12,56 @@ spring:
       max-file-size: 50MB    # 최대 파일 크기
       max-request-size: 50MB # 최대 요청 크기
 
-gemini:
-  api:
-    url: https://generativelanguage.googleapis.com/v1
-    key: ${GEMINI_API_KEY}
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      timeout: 10s
 
-openai:
-  api:
-    url: https://api.openai.com/v1
-    key: ${OPENAI_API_KEY}
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${GOOGLE_REDIRECT_URL}
+            scope:
+              - email
+              - profile
+
+app:
+  props:
+    jwt:
+      secret-key: ${JWT_SECRET}
+
+    aws:
+      key:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      s3:
+        bucket-name: ${AWS_S3_BUCKET_NAME}
+        region: ${AWS_REGION}
+
+org:
+  file:
+    upload:
+      path: upload
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+frontend:
+  redirect:
+    url: ${FRONTEND_REDIRECT_URL}
+
+rag:
+  base-url: ${RAG_BASE_URL}
