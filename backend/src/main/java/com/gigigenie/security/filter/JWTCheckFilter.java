@@ -9,16 +9,15 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Map;
 
 @Log4j2
 @Component
@@ -39,32 +38,31 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
         // SecurityConfig와 일치하는 경로 패턴 - permitAll() 설정된 경로들
         if (path.equals("/api/member/login") ||
-                path.equals("/api/member/join") ||
-                path.equals("/api/member/check-email") ||
-                path.equals("/api/member/me") ||
-                path.equals("/api/member/refresh") ||
-                path.equals("/api/oauth2/") ||
-                path.equals("/oauth2/") ||
-                path.equals("/login/oauth2/code/") ||
-                path.equals("/api/product/search") ||
-                path.equals("/api/product/list") ||
-                (path.startsWith("/api/chat"))) {
+            path.equals("/api/member/join") ||
+            path.equals("/api/member/check-email") ||
+            path.equals("/api/member/me") ||
+            path.equals("/api/member/refresh") ||
+            path.equals("/api/oauth2/") ||
+            path.equals("/oauth2/") ||
+            path.equals("/login/oauth2/code/") ||
+            path.equals("/api/product/search") ||
+            path.equals("/api/product/list")) {
             return true;
         }
 
         // 관리자 경로
         if (path.startsWith("/api/admin/member/login") ||
-                path.startsWith("/api/admin/member/join") ||
-                path.startsWith("/api/admin/member/refresh") ||
-                path.startsWith("/api/admin/member/logout")) {
+            path.startsWith("/api/admin/member/join") ||
+            path.startsWith("/api/admin/member/refresh") ||
+            path.startsWith("/api/admin/member/logout")) {
             return true;
         }
 
         // Swagger 및 기타 리소스 관련 경로 제외
         if (path.startsWith("/swagger-ui/") ||
-                path.startsWith("/v3/api-docs") ||
-                path.startsWith("/h2-console") ||
-                path.startsWith("/favicon.ico")) {
+            path.startsWith("/v3/api-docs") ||
+            path.startsWith("/h2-console") ||
+            path.startsWith("/favicon.ico")) {
             return true;
         }
 
@@ -72,7 +70,8 @@ public class JWTCheckFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+        FilterChain filterChain) throws ServletException, IOException {
         log.info("------------------JWTCheckFilter 시작------------------");
         log.info("요청 경로: {}", request.getServletPath());
 
@@ -89,7 +88,8 @@ public class JWTCheckFilter extends OncePerRequestFilter {
         }
 
         log.info("쿠키에서 추출된 accessToken: {}", accessToken != null ?
-                (accessToken.length() > 20 ? accessToken.substring(0, 20) + "..." : accessToken) : "없음");
+            (accessToken.length() > 20 ? accessToken.substring(0, 20) + "..." : accessToken)
+            : "없음");
 
         if (accessToken == null) {
             log.info("AccessToken 없음, 필터 통과");
@@ -120,7 +120,8 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             log.info("memberDTO의 권한: {}", memberDTO.getAuthorities());
 
             UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(memberDTO, password, memberDTO.getAuthorities());
+                new UsernamePasswordAuthenticationToken(memberDTO, password,
+                    memberDTO.getAuthorities());
             log.info("생성된 인증 토큰: {}", authenticationToken);
             log.info("인증 토큰의 권한: {}", authenticationToken.getAuthorities());
 
