@@ -1,14 +1,14 @@
 package com.gigigenie.domain.favorite.service;
 
-import com.gigigenie.domain.favorite.dto.FavoriteRequest;
-
 import java.util.List;
+import org.springframework.security.core.Authentication;
 
 public interface FavoriteService {
-    List<Integer> list(Integer memberId);
 
-    void addFavorite(FavoriteRequest request);
+    List<Long> list(Authentication authentication);
 
-    void deleteFavorite(FavoriteRequest request);
+    void addFavorite(Long productId, Authentication authentication);
+
+    void deleteFavorite(Long productId, Authentication authentication);
 
 }

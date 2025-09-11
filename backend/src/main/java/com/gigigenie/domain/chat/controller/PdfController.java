@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,8 +34,7 @@ public class PdfController {
         @RequestParam("name") String name,
         @Parameter(description = "업로드할 제품 이미지 (jpg, jpeg, png, webp 형식만 허용)")
         @RequestParam(value = "image", required = false) MultipartFile image,
-        @Parameter(description = "회원ID", required = true)
-        @RequestParam(value = "memberId") Integer memberId
+        Authentication authentication
     ) {
         if (!Objects.requireNonNull(file.getOriginalFilename()).endsWith(".pdf")) {
             return ResponseEntity.badRequest().body("PDF 파일만 지원합니다.");
@@ -62,7 +62,7 @@ public class PdfController {
             }
         }
 
-        var result = pdfService.processPdf(file, categoryId, name, image, memberId);
+        var result = pdfService.processPdf(file, categoryId, name, image, authentication);
         return ResponseEntity.ok(result);
     }
 }

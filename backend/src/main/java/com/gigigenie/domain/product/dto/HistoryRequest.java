@@ -1,9 +1,12 @@
 package com.gigigenie.domain.product.dto;
 
-import lombok.*;
-
 import java.util.List;
 import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -11,8 +14,7 @@ import java.util.Map;
 @Setter
 @Getter
 public class HistoryRequest {
-    private Integer memberId;
-    private Integer productId;
-    private List<Map<String, Object>> history;
 
+    private Long productId;
+    private List<Map<String, Object>> history;
 }
