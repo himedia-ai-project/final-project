@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class ChatMessage {
 
     private String role; // "user" | "assistant"
-    private String content; // 메시지 내용
+    private String messages; // 메시지 내용
 }
