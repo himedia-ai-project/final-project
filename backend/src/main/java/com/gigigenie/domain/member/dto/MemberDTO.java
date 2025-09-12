@@ -21,6 +21,7 @@ public class MemberDTO extends User {
     private String name;
     private MemberRole role;
 
+    // 여기 부분 수정이 필요해 보입니다
     public MemberDTO(Integer id, String email, String password, String name, MemberRole role) {
         super(email, password,
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name())));
@@ -30,11 +31,11 @@ public class MemberDTO extends User {
         this.name = name;
         this.role = role;
     }
-
     public Map<String, Object> getClaims() {
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("id", this.id);
         dataMap.put("email", this.email);
+        // 비밀번호를 전달해주면 안됩니다
         dataMap.put("password", this.password);
         dataMap.put("name", this.name);
         dataMap.put("role", this.role);

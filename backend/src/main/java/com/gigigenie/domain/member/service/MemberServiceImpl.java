@@ -55,7 +55,7 @@ public class MemberServiceImpl implements MemberService {
             return false;
         }
     }
-
+    // return type 수정해주세요
     @Override
     public Map<String, Object> login(String id, String password) {
         Member member = memberRepository.findByEmail(id)

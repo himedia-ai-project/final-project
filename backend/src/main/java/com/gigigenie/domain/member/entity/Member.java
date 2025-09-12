@@ -39,6 +39,7 @@ public class Member {
     @Builder.Default
     private LocalDateTime joinDate = LocalDateTime.now();
 
+    // 사용안하는 메서드는 삭제 해주세요
     public Member updateName(String name) {
         this.name = name;
         return this;
