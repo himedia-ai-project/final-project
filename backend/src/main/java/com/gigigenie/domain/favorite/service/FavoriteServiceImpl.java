@@ -1,62 +1,56 @@
 package com.gigigenie.domain.favorite.service;
 
-import com.gigigenie.domain.favorite.dto.FavoriteRequest;
 import com.gigigenie.domain.favorite.entity.Favorite;
 import com.gigigenie.domain.favorite.repository.FavoriteRepository;
+import com.gigigenie.domain.member.dto.MemberDTO;
 import com.gigigenie.domain.member.entity.Member;
 import com.gigigenie.domain.member.repository.MemberRepository;
 import com.gigigenie.domain.product.entity.Product;
 import com.gigigenie.domain.product.repository.ProductRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 @Transactional
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class FavoriteServiceImpl implements FavoriteService {
+
     private final FavoriteRepository favoriteRepository;
     private final MemberRepository memberRepository;
     private final ProductRepository productRepository;
 
     @Override
-    public List<Integer> list(Integer memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+    public List<Long> list(Authentication authentication) {
+        MemberDTO memberDTO = (MemberDTO) authentication.getPrincipal();
+        Member member = memberRepository.findById(memberDTO.getId())
+            .orElseThrow(() -> new RuntimeException("Member not found"));
+
         List<Favorite> favorites = favoriteRepository.findByMember(member);
         if (favorites.isEmpty()) {
             return List.of();
         }
         return favorites.stream()
-                .map(favorite -> favorite.getProduct().getId())
-                .toList();
+            .map(favorite -> favorite.getProduct().getId())
+            .toList();
     }
 
     @Override
-    public void addFavorite(FavoriteRequest request) {
-        Optional<Member> optionalMember = memberRepository.findById(request.getMemberId());
-        Optional<Product> optionalProduct = productRepository.findById(request.getProductId());
-
-        if (optionalMember.isEmpty() || optionalProduct.isEmpty()) {
-            log.warn("즐겨찾기 추가 실패 : memberId={}, productId={}",
-                    request.getMemberId(), request.getProductId());
-            return;
-        }
-
-        Member member = optionalMember.get();
-        Product product = optionalProduct.get();
+    public void addFavorite(Long productId, Authentication authentication) {
+        Member member = findMember(authentication);
+        Product product = findProduct(productId);
 
         List<Favorite> existingFavorites = favoriteRepository.findByMember(member);
         boolean alreadyExists = existingFavorites.stream()
-                .anyMatch(fav -> fav.getProduct().getId().equals(product.getId()));
+            .anyMatch(fav -> fav.getProduct().getId().equals(product.getId()));
 
         if (alreadyExists) {
-            log.info("이미 즐겨찾기에 존재함: memberId={}, productId={}", request.getMemberId(), request.getProductId());
+            log.info("이미 즐겨찾기에 존재함: memberId={}, productId={}", member.getMemberId(),
+                product.getId());
             return;
         }
 
@@ -64,19 +58,20 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
-    public void deleteFavorite(FavoriteRequest request) {
-        Optional<Member> optionalMember = memberRepository.findById(request.getMemberId());
-        Optional<Product> optionalProduct = productRepository.findById(request.getProductId());
-
-        if (optionalMember.isEmpty() || optionalProduct.isEmpty()) {
-            log.warn("즐겨찾기 삭제 요청 실패 : memberId={}, productId={}",
-                    request.getMemberId(), request.getProductId());
-            return;
-        }
-
-        Member member = optionalMember.get();
-        Product product = optionalProduct.get();
-
+    public void deleteFavorite(Long productId, Authentication authentication) {
+        Member member = findMember(authentication);
+        Product product = findProduct(productId);
         favoriteRepository.deleteByProductAndMember(product, member);
+    }
+
+    private Member findMember(Authentication authentication) {
+        MemberDTO memberDTO = (MemberDTO) authentication.getPrincipal();
+        return memberRepository.findById(memberDTO.getId())
+            .orElseThrow(() -> new RuntimeException("Member not found"));
+    }
+
+    private Product findProduct(Long productId) {
+        return productRepository.findById(productId)
+            .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 }

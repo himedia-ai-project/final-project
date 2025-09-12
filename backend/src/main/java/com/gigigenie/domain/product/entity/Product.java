@@ -31,10 +31,7 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_id", nullable = false)
-    private Integer id;
-
-    @Column(name = "pdf_id", nullable = false)
-    private String pdfId;
+    private Long id;
 
     @JsonBackReference
     @NotNull

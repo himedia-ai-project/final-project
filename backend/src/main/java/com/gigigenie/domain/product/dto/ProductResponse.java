@@ -1,6 +1,10 @@
 package com.gigigenie.domain.product.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -8,7 +12,8 @@ import lombok.*;
 @Setter
 @Getter
 public class ProductResponse {
-    private Integer id;
+
+    private Long id;
     private String name;
     private String icon;
     private String url;
