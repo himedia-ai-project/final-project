@@ -1,8 +1,10 @@
 package com.gigigenie.domain.chat.controller;
 
+import com.gigigenie.domain.chat.dto.ChatMessage;
 import com.gigigenie.domain.chat.dto.ChatRequest;
 import com.gigigenie.domain.chat.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +24,9 @@ public class ChatController {
 
     @Operation(summary = "대화형 제품 설명서 질의응답")
     @PostMapping
-    public ResponseEntity<String> chat(@RequestBody ChatRequest request,
+    public ResponseEntity<List<ChatMessage>> chat(@RequestBody ChatRequest request,
         Authentication authentication) {
-        String answer = chatService.processChat(request, authentication);
+        List<ChatMessage> answer = chatService.processChat(request, authentication);
         return ResponseEntity.ok(answer);
     }
 }
