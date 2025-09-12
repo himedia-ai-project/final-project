@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 @RequiredArgsConstructor
-public class RagClientConfig {
+public class WebClientConfig {
 
     @Value("${rag.base-url}")
     private String ragBaseUrl;
