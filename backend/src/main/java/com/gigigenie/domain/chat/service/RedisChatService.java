@@ -7,12 +7,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-//파일 위치 변경
-// 오류 예외처리 수정해주세요(오류 발생시 알맞은 return 수정)
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RedisChatService {
@@ -29,10 +28,19 @@ public class RedisChatService {
     // 대화 불러오기
     public List<ChatMessage> load(Integer memberId, Long productId) {
         String redisKey = redis.opsForValue().get(key(memberId, productId));
-        if (redisKey == null) return new ArrayList<>();
+        if (redisKey == null) {
+            return new ArrayList<>();
+        }
         try {
-            return Arrays.asList(om.readValue(redisKey, ChatMessage[].class));
+            ChatMessage[] history = om.readValue(redisKey, ChatMessage[].class);
+            if (history == null) {
+                return new ArrayList<>();
+            }
+
+            return new ArrayList<>(Arrays.asList(history));
         } catch (Exception e) {
+            log.error("Redis load 실패 (memberId={}, productId={}): {}", memberId, productId,
+                e.getMessage(), e);
             return new ArrayList<>();
         }
     }
@@ -42,7 +50,10 @@ public class RedisChatService {
         try {
             String s = om.writeValueAsString(history);
             redis.opsForValue().set(key(memberId, productId), s, TTL);
-        } catch (Exception ignore) {}
+        } catch (Exception e) {
+            log.error("Redis save 실패 (memberId={}, productId={}): {}", memberId, productId,
+                e.getMessage(), e);
+        }
     }
 
     // 유저,에이전트 메시지 추가 = 전체 이력 반환 (FastAPI 호출용)
@@ -51,5 +62,21 @@ public class RedisChatService {
         history.add(newMessage); // 새 메시지 추가
         save(memberId, productId, history); // Redis 갱신
         return history;
+    }
+
+    // 대화 삭제
+    public void delete(Integer memberId, Long productId) {
+        try {
+            String redisKey = key(memberId, productId);
+            Boolean result = redis.delete(redisKey);
+            if (result) {
+                log.info("delete 성공 (memberId={}, productId={})", memberId, productId);
+            } else {
+                log.warn("delete 대상 없음 (memberId={}, productId={})", memberId, productId);
+            }
+        } catch (Exception e) {
+            log.error("Redis delete 실패 (memberId={}, productId={}): {}",
+                memberId, productId, e.getMessage(), e);
+        }
     }
 }
