@@ -1,18 +1,13 @@
-package com.gigigenie.domain.product.service;
+package com.gigigenie.domain.history.service;
 
-import com.gigigenie.domain.product.dto.HistoryRequest;
-import com.gigigenie.domain.product.dto.QueryHistoryDTO;
-import com.gigigenie.domain.product.entity.QueryHistory;
+import com.gigigenie.domain.history.dto.QueryHistoryDTO;
+import com.gigigenie.domain.history.entity.QueryHistory;
 import java.util.List;
 import org.springframework.security.core.Authentication;
 
 public interface QueryHistoryService {
 
-    void save(HistoryRequest request, Authentication authentication);
-
     List<QueryHistoryDTO> getHistories(Long productId, Authentication authentication);
-
-    void deleteByMemberAndProduct(Long productId, Authentication authentication);
 
     List<Long> recent(Authentication authentication);
 
@@ -20,11 +15,9 @@ public interface QueryHistoryService {
         return QueryHistoryDTO.builder()
             .id(queryHistory.getId())
             .product(queryHistory.getProduct())
-            .queryText(queryHistory.getQueryText())
-            .responseText(queryHistory.getResponseText())
-            .queryTime(queryHistory.getQueryTime())
             .member(queryHistory.getMember())
+            .role(queryHistory.getRole().toString())
+            .messages(queryHistory.getMessages())
             .build();
     }
-
 }

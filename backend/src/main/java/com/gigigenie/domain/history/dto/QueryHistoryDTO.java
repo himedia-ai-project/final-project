@@ -1,8 +1,12 @@
-package com.gigigenie.domain.product.dto;
+package com.gigigenie.domain.history.dto;
 
 import com.gigigenie.domain.member.entity.Member;
 import com.gigigenie.domain.product.entity.Product;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -10,11 +14,10 @@ import lombok.*;
 @Setter
 @Getter
 public class QueryHistoryDTO {
+
     private Integer id;
     private Product product;
-    private String queryText;
-    private String responseText;
-    private Long queryTime;
     private Member member;
-    private String sessionId;
+    private String role;
+    private String messages;
 }

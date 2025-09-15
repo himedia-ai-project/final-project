@@ -1,8 +1,7 @@
-package com.gigigenie.domain.product.controller;
+package com.gigigenie.domain.history.controller;
 
-import com.gigigenie.domain.product.dto.HistoryRequest;
-import com.gigigenie.domain.product.dto.QueryHistoryDTO;
-import com.gigigenie.domain.product.service.QueryHistoryService;
+import com.gigigenie.domain.history.dto.QueryHistoryDTO;
+import com.gigigenie.domain.history.service.QueryHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,11 +36,4 @@ public class QueryHistoryController {
         log.info("최근 항목 조회 결과: {}", ids);
         return ResponseEntity.ok(ids);
     }
-
-    @Operation(summary = "대화내용 저장")
-    @PostMapping("/save")
-    public void save(@RequestBody HistoryRequest request, Authentication authentication) {
-        historyService.save(request, authentication);
-    }
-
 }
