@@ -1,10 +1,10 @@
 package com.gigigenie.domain.product.service;
 
 import com.gigigenie.domain.member.dto.MemberDTO;
-import com.gigigenie.domain.member.entity.Member;
 import com.gigigenie.domain.member.repository.MemberRepository;
 import com.gigigenie.domain.notification.service.NotificationService;
 import com.gigigenie.domain.product.dto.ProductResponse;
+import com.gigigenie.domain.product.dto.UploadRequest;
 import com.gigigenie.domain.product.dto.UploadResponse;
 import com.gigigenie.domain.product.entity.Category;
 import com.gigigenie.domain.product.entity.Product;
@@ -18,14 +18,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -56,7 +55,7 @@ public class ProductServiceImpl implements ProductService {
     public Map<String, Object> processPdf(MultipartFile file, Integer categoryId, String name,
         MultipartFile image, Authentication authentication) {
         MemberDTO memberDTO = (MemberDTO) authentication.getPrincipal();
-        Member member = memberRepository.findById(memberDTO.getId())
+        memberRepository.findById(memberDTO.getId())
             .orElseThrow(() -> new RuntimeException("Member not found"));
 
         // 중복 체크
@@ -71,7 +70,8 @@ public class ProductServiceImpl implements ProductService {
 
         // S3 업로드 (PDF)
         String fileKey = fileUtil.uploadS3File(file);
-        log.info("PDF 파일 S3 업로드 완료: {}", fileKey);
+        String fileUrl = fileUtil.getS3Url(fileKey);
+        log.info("PDF 파일 S3 업로드 완료: key={}, url={}", fileKey, fileUrl);
 
         String imageUrl = null;
 
@@ -79,7 +79,7 @@ public class ProductServiceImpl implements ProductService {
         if (image != null && !image.isEmpty()) {
             String imageKey = fileUtil.uploadS3File(image);
             imageUrl = fileUtil.getS3Url(imageKey);
-            log.info("이미지 S3 업로드 완료: {}, URL: {}", imageKey, imageUrl);
+            log.info("이미지 S3 업로드 완료: key={}, url={}", imageKey, imageUrl);
         }
 
         // 카테고리 조회 & Product 저장
@@ -95,15 +95,10 @@ public class ProductServiceImpl implements ProductService {
 
         productRepository.save(product);
 
-        // FastAPI /upload 호출 (파일 그대로 전달)
-        UploadResponse ragResp = null;
-        try {
-            ragResp = callRagUpload(file, product.getId());
-            log.info("RAG 인덱싱 성공: pdf_id={}, store_path={}",
-                ragResp.getPdfId(), ragResp.getStorePath());
-        } catch (Exception e) {
-            log.error("RAG 인덱싱 실패: {}", e.getMessage(), e);
-        }
+        // FastAPI /upload 호출 (파일 URL 전달)
+        UploadResponse uploadResponse = callRagUpload(product.getId(), fileUrl);
+        log.info("RAG 인덱싱 성공: pdf_id={}, store_path={}", uploadResponse.getPdfId(),
+            uploadResponse.getStorePath());
 
         // 알림
         notificationService.addNotification(name +
@@ -111,22 +106,32 @@ public class ProductServiceImpl implements ProductService {
 
         return Map.of(
             "status", "success",
-            "product_id", product.getId(),
-            "message", ragResp.getMessage()
+            "product_id", uploadResponse.getPdfId(),
+            "message", uploadResponse.getMessage()
         );
     }
 
-    private UploadResponse callRagUpload(MultipartFile file, Long pdfId) {
-        MultipartBodyBuilder body = new MultipartBodyBuilder();
-        body.part("file", file.getResource());
-        body.part("pdf_id", pdfId);
+    private UploadResponse callRagUpload(Long productId, String fileUrl) {
+        UploadRequest uploadRequest = new UploadRequest(productId, fileUrl);
 
         return ragWebClient.post()
             .uri("/upload")
-            .contentType(MediaType.MULTIPART_FORM_DATA)
-            .body(BodyInserters.fromMultipartData(body.build()))
+            .bodyValue(uploadRequest)
             .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError, res ->
+                res.bodyToMono(String.class)
+                    .defaultIfEmpty("요청 본문 없음")
+                    .flatMap(
+                        msg -> Mono.error(new IllegalArgumentException("잘못된 요청: " + msg)))
+            )
+            .onStatus(HttpStatusCode::is5xxServerError, res ->
+                res.bodyToMono(String.class)
+                    .defaultIfEmpty("서버 오류 본문 없음")
+                    .flatMap(
+                        msg -> Mono.error(new IllegalStateException("서버 오류: " + msg)))
+            )
             .bodyToMono(UploadResponse.class)
+            .switchIfEmpty(Mono.error(new IllegalStateException("응답이 비어있음")))
             .block();
     }
 }
