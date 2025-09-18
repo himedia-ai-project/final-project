@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -33,16 +32,19 @@ public class ChatController {
         return ResponseEntity.ok(answer);
     }
 
-    @Operation(
-        summary = "대화 종료",
-        description = "skipSave=true 대화내역 저장 X, skipSave=false 대화내역 저장 O"
-    )
+    @Operation(summary = "대화 종료")
     @DeleteMapping("/{productId}")
-    public ResponseEntity<String> endChat(
-        @PathVariable Long productId, Authentication authentication,
-        @RequestParam(defaultValue = "false") boolean skipSave
-    ) {
-        chatService.endChat(productId, authentication, skipSave);
+    public ResponseEntity<String> endChat(@PathVariable Long productId,
+        Authentication authentication) {
+        chatService.endChat(productId, authentication);
         return ResponseEntity.ok("대화가 종료되었습니다.");
+    }
+
+    @Operation(summary = "세션 삭제")
+    @DeleteMapping("/{productId}/session")
+    public ResponseEntity<String> clearSession(@PathVariable Long productId,
+        Authentication authentication) {
+        chatService.clearSession(productId, authentication);
+        return ResponseEntity.ok("세션 삭제가 완료되었습니다.");
     }
 }

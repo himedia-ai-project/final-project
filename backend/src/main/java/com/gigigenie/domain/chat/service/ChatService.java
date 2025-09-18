@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,14 +51,25 @@ public class ChatService {
         // request 요청
         FastApiRequest fastApiRequest = new FastApiRequest(productId, question, history);
 
-        // FastAPI /chat 호출  타입수정 필요해 옵입니다 response 수정
-        // webClient 예외처리부분도 추가해주세요
         String botResponse = ragWebClient.post()
             .uri("/chat")
             .bodyValue(fastApiRequest)
             .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError, res ->
+                res.bodyToMono(String.class)
+                    .defaultIfEmpty("요청 본문 없음")
+                    .flatMap(msg -> Mono.error(
+                        new IllegalArgumentException("잘못된 요청: " + msg)
+                    ))
+            )
+            .onStatus(HttpStatusCode::is5xxServerError, res ->
+                res.bodyToMono(String.class)
+                    .defaultIfEmpty("서버 오류 본문 없음")
+                    .flatMap(msg -> Mono.error(
+                        new IllegalStateException("서버 오류: " + msg)
+                    ))
+            )
             .bodyToMono(String.class)
-            .doOnNext(res -> log.info("응답: {}", res))
             .switchIfEmpty(Mono.error(new IllegalStateException("응답이 비어있음")))
             .block();
 
@@ -69,7 +81,7 @@ public class ChatService {
     }
 
     // 대화 종료
-    public void endChat(Long productId, Authentication authentication, boolean skipSave) {
+    public void endChat(Long productId, Authentication authentication) {
         // 1) 식별자 조회
         Member member = findMember(authentication);
         Product product = findProduct(productId);
@@ -81,7 +93,7 @@ public class ChatService {
         queryHistoryRepository.deleteByMemberAndProduct(member, product);
 
         // 4) 저장 옵션이 켜져 있고 대화 내역이 있으면 db에 저장
-        if (!skipSave && !history.isEmpty()) {
+        if (!history.isEmpty()) {
             List<QueryHistory> histories = new ArrayList<>(history.size());
 
             for (ChatMessage message : history) {
@@ -95,20 +107,22 @@ public class ChatService {
             }
             queryHistoryRepository.saveAll(histories);
         }
+    }
 
+    // 세션 삭제
+    public void clearSession(Long productId, Authentication authentication) {
+        Member member = findMember(authentication);
+        Product product = findProduct(productId);
         redisChatService.delete(member.getMemberId(), product.getId());
     }
 
     // 문자열 role("user", "bot")을 ChatRole Enum 값으로 변환
     private ChatRole convertRole(String role) {
-        if ("user".equals(role)) {
-            return ChatRole.user;
-        }
-
-        if ("bot".equals(role)) {
-            return ChatRole.bot;
-        }
-        throw new IllegalArgumentException("Unknown role: " + role);
+        return switch (role) {
+            case "user" -> ChatRole.user;
+            case "bot" -> ChatRole.bot;
+            default -> throw new IllegalArgumentException("Unknown role: " + role);
+        };
     }
 
     private Member findMember(Authentication authentication) {
