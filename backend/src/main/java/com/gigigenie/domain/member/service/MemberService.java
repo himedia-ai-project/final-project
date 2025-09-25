@@ -1,16 +1,15 @@
 package com.gigigenie.domain.member.service;
 
-import com.gigigenie.domain.member.dto.JoinRequestDTO;
-
-import java.util.Map;
+import com.gigigenie.domain.member.dto.JoinDTO;
+import com.gigigenie.domain.member.dto.MemberDTO;
 
 public interface MemberService {
 
-    void join(JoinRequestDTO request);
+    void join(JoinDTO request);
 
     boolean isEmailDuplicate(String email);
 
-    Map<String, Object> login(String id, String password);
+    MemberDTO login(String id, String password);
 
 }
 
