@@ -1,6 +1,5 @@
 package com.gigigenie.security.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gigigenie.domain.member.dto.MemberDTO;
 import com.gigigenie.domain.member.enums.MemberRole;
 import com.gigigenie.util.JWTUtil;
@@ -10,7 +9,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -73,7 +71,6 @@ public class JWTCheckFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
         log.info("------------------JWTCheckFilter 시작------------------");
-        log.info("요청 경로: {}", request.getServletPath());
 
         Cookie[] cookies = request.getCookies();
         String accessToken = null;
@@ -87,10 +84,6 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             }
         }
 
-        log.info("쿠키에서 추출된 accessToken: {}", accessToken != null ?
-            (accessToken.length() > 20 ? accessToken.substring(0, 20) + "..." : accessToken)
-            : "없음");
-
         if (accessToken == null) {
             log.info("AccessToken 없음, 필터 통과");
             filterChain.doFilter(request, response);
@@ -99,30 +92,19 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
         try {
             Map<String, Object> claims = jwtUtil.validateToken(accessToken);
-            log.info("JWT claims: {}", claims);
 
             Integer id = (Integer) claims.get("id");
             String email = (String) claims.get("email");
-            String password = (String) claims.get("password");
             String name = (String) claims.get("name");
             String role = (String) claims.get("role");
             log.info("추출된 role: {}", role);
 
-            if (password == null || password.isEmpty()) {
-                password = "oauth2UserDummyPassword";
-                log.info("OAuth2 사용자를 위한 더미 비밀번호 설정");
-            }
-
             MemberRole memberRole = MemberRole.valueOf(role);
-            MemberDTO memberDTO = new MemberDTO(id, email, password, name, memberRole);
-
-            log.info("생성된 memberDTO: {}", memberDTO);
-            log.info("memberDTO의 권한: {}", memberDTO.getAuthorities());
+            MemberDTO memberDTO = new MemberDTO(id, email, "", name, memberRole);
 
             UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(memberDTO, password,
+                new UsernamePasswordAuthenticationToken(memberDTO, null,
                     memberDTO.getAuthorities());
-            log.info("생성된 인증 토큰: {}", authenticationToken);
             log.info("인증 토큰의 권한: {}", authenticationToken.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
@@ -131,17 +113,9 @@ public class JWTCheckFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             log.info("------------------JWTCheckFilter 종료------------------");
         } catch (Exception e) {
-            log.error("JWT 체크 오류: {}", e.getMessage(), e);
-            log.error("e.getMessage(): {}", e.getMessage());
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            String msg = objectMapper.writeValueAsString(Map.of("error", "ERROR_ACCESS_TOKEN"));
-
             response.setContentType("application/json;charset=UTF-8");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            PrintWriter printWriter = response.getWriter();
-            printWriter.println(msg);
-            printWriter.close();
+            response.getWriter().println("{\"error\":\"ERROR_ACCESS_TOKEN\"}");
         }
     }
 
