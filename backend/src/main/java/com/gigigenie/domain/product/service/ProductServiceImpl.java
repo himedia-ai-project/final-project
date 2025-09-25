@@ -11,9 +11,9 @@ import com.gigigenie.domain.product.entity.Product;
 import com.gigigenie.domain.product.repository.CategoryRepository;
 import com.gigigenie.domain.product.repository.ProductRepository;
 import com.gigigenie.util.files.CustomFileUtil;
+import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -52,20 +52,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Map<String, Object> processPdf(MultipartFile file, Integer categoryId, String name,
+    public String processPdf(MultipartFile file, Integer categoryId, String name,
         MultipartFile image, Authentication authentication) {
-        MemberDTO memberDTO = (MemberDTO) authentication.getPrincipal();
-        memberRepository.findById(memberDTO.getId())
-            .orElseThrow(() -> new RuntimeException("Member not found"));
+        findMember(authentication);
 
         // 중복 체크
         Optional<Product> existingProduct = productRepository.findByModelName(name);
         if (existingProduct.isPresent()) {
-            return Map.of(
-                "status", "exists",
-                "message", "이미 등록된 모델입니다.",
-                "model_name", existingProduct.get().getModelName()
-            );
+            return "이미 등록된 모델입니다. (모델명: " + existingProduct.get().getModelName() + ")";
         }
 
         // S3 업로드 (PDF)
@@ -84,19 +78,20 @@ public class ProductServiceImpl implements ProductService {
 
         // 카테고리 조회 & Product 저장
         Category category = categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new RuntimeException("Category not found"));
+            .orElseThrow(() -> new EntityNotFoundException("Category not found"));
 
         Product product = Product.builder()
             .category(category)
             .modelName(name)
             .modelImage(imageUrl)
+            .modelKey(fileKey)
             .createdAt(LocalDateTime.now())
             .build();
 
         productRepository.save(product);
 
         // FastAPI /upload 호출 (파일 URL 전달)
-        UploadResponse uploadResponse = callRagUpload(product.getId(), fileUrl);
+        UploadResponse uploadResponse = pdfUpload(product.getId(), fileUrl);
         log.info("RAG 인덱싱 성공: pdf_id={}, store_path={}", uploadResponse.getPdfId(),
             uploadResponse.getStorePath());
 
@@ -104,14 +99,19 @@ public class ProductServiceImpl implements ProductService {
         notificationService.addNotification(name +
             " 제품이 성공적으로 등록되었습니다.", "제품 등록 완료", authentication);
 
-        return Map.of(
-            "status", "success",
-            "product_id", uploadResponse.getPdfId(),
-            "message", uploadResponse.getMessage()
-        );
+        return uploadResponse.getMessage();
     }
 
-    private UploadResponse callRagUpload(Long productId, String fileUrl) {
+    @Override
+    public String downloadPdf(Long productId, Authentication authentication) {
+        findMember(authentication);
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+        String key = product.getModelKey();
+        return fileUtil.getS3Url(key);
+    }
+
+    private UploadResponse pdfUpload(Long productId, String fileUrl) {
         UploadRequest uploadRequest = new UploadRequest(productId, fileUrl);
 
         return ragWebClient.post()
@@ -133,5 +133,11 @@ public class ProductServiceImpl implements ProductService {
             .bodyToMono(UploadResponse.class)
             .switchIfEmpty(Mono.error(new IllegalStateException("응답이 비어있음")))
             .block();
+    }
+
+    private void findMember(Authentication authentication) {
+        MemberDTO memberDTO = (MemberDTO) authentication.getPrincipal();
+        memberRepository.findById(memberDTO.getId())
+            .orElseThrow(() -> new EntityNotFoundException("Member not found"));
     }
 }
