@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -93,11 +93,11 @@ public class CustomControllerAdvice {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(getErrorMessage(msg));
     }
 
-    // 401: 사용자 미발견(인증 단계에서의 실패로 간주)
-    @ExceptionHandler(UsernameNotFoundException.class)
-    protected ResponseEntity<?> handleUsernameNotFoundException(UsernameNotFoundException e) {
+    // 401: 비밀번호 불일치
+    @ExceptionHandler(BadCredentialsException.class)
+    protected ResponseEntity<?> handleBadCredentialsException(BadCredentialsException e) {
         String msg = e.getMessage();
-        log.error("UsernameNotFoundException: {}", msg);
+        log.error("BadCredentialsException: {}", msg);
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(getErrorMessage(msg));
     }
