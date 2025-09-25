@@ -43,9 +43,9 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = productRepository.findAllWithCategory();
         return products.stream().map(product -> (
             ProductResponse.builder()
-                .id(product.getId())
-                .name(product.getModelName())
-                .url(product.getModelImage() != null ? product.getModelImage()
+                .productId(product.getId())
+                .modelName(product.getModelName())
+                .iconUrl(product.getModelImage() != null ? product.getModelImage()
                     : product.getCategory().getCategoryIcon())
                 .build())).collect(Collectors.toList());
     }
