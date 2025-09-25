@@ -1,7 +1,8 @@
 package com.gigigenie.domain.member.controller;
 
-import com.gigigenie.domain.member.dto.JoinRequestDTO;
+import com.gigigenie.domain.member.dto.JoinDTO;
 import com.gigigenie.domain.member.dto.LoginDTO;
+import com.gigigenie.domain.member.dto.MemberDTO;
 import com.gigigenie.domain.member.service.MemberService;
 import com.gigigenie.exception.CustomJWTException;
 import com.gigigenie.props.JwtProps;
@@ -12,28 +13,34 @@ import io.jsonwebtoken.JwtException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import lombok.*;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.Date;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
 public class MemberController {
+
     private final MemberService memberService;
     private final JWTUtil jwtUtil;
     private final JwtProps jwtProps;
 
     @Operation(summary = "회원가입")
     @PostMapping("/join")
-    public ResponseEntity<?> joinMember(@Valid @RequestBody JoinRequestDTO request) {
-        log.info("join: {}", request);
-        memberService.join(request);
+    public ResponseEntity<?> joinMember(@Valid @RequestBody JoinDTO joinDTO) {
+        memberService.join(joinDTO);
         return ResponseEntity.ok().build();
     }
 
@@ -46,56 +53,43 @@ public class MemberController {
         return ResponseEntity.ok(isDuplicate);
     }
 
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Data
-    static class LoginResponseDTO {
-        private String id;
-        private String name;
-        private String role;
-        private String accessToken;
-    }
-
     @Operation(summary = "로그인")
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginDTO loginDTO, HttpServletResponse response) {
-        log.info("login: {}", loginDTO);
-        Map<String, Object> loginClaims = memberService.login(loginDTO.getId(), loginDTO.getPassword());
+    public ResponseEntity<String> login(@Valid @RequestBody LoginDTO loginDTO,
+        HttpServletResponse response) {
+        MemberDTO memberDTO = memberService.login(loginDTO.getId(),
+            loginDTO.getPassword());
 
-        String refreshToken = loginClaims.get("refreshToken").toString();
-        String accessToken = loginClaims.get("accessToken").toString();
+        Map<String, Object> claims = memberDTO.getClaims();
 
-        CookieUtil.setTokenCookie(response, "refreshToken", refreshToken, jwtProps.getRefreshTokenExpirationPeriod());
-        CookieUtil.setTokenCookie(response, "accessToken", accessToken, jwtProps.getAccessTokenExpirationPeriod());
+        // 토큰 생성
+        String accessToken = jwtUtil.generateToken(claims,
+            jwtProps.getAccessTokenExpirationPeriod());
+        String refreshToken = jwtUtil.generateToken(claims,
+            jwtProps.getRefreshTokenExpirationPeriod());
 
-        LoginResponseDTO loginResponseDTO = LoginResponseDTO.builder()
-                .id(loginClaims.get("id").toString())
-                .name(loginClaims.get("name").toString())
-                .role(loginClaims.get("role").toString())
-                .accessToken(accessToken)
-                .build();
+        // 쿠키 생성
+        CookieUtil.setTokenCookie(response, "refreshToken", refreshToken,
+            jwtProps.getRefreshTokenExpirationPeriod());
+        CookieUtil.setTokenCookie(response, "accessToken", accessToken,
+            jwtProps.getAccessTokenExpirationPeriod());
 
-        log.info("loginResponseDTO: {}", loginResponseDTO);
-        // 로그인 성공시, id, name, role 반환
-        return ResponseEntity.ok(loginResponseDTO);
+        return ResponseEntity.ok("login success!");
     }
 
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletResponse response) {
-        log.info("logout");
-
-        CookieUtil.removeTokenCookie(response, "refreshToken");
         CookieUtil.removeTokenCookie(response, "accessToken");
-
+        CookieUtil.removeTokenCookie(response, "refreshToken");
+        SecurityContextHolder.clearContext();
         return ResponseEntity.ok("logout success!");
     }
 
     @Operation(summary = "현재 로그인 사용자 정보 조회")
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(
-            @CookieValue(value = "accessToken", required = false) String accessToken) {
+        @CookieValue(value = "accessToken", required = false) String accessToken) {
 
         log.info("getCurrentUser 호출, accessToken 존재: {}", accessToken != null);
 
@@ -112,11 +106,11 @@ public class MemberController {
             String role = (String) claims.get("role");
 
             Map<String, Object> userInfo = Map.of(
-                    "id", id.toString(),
-                    "email", email,
-                    "name", name,
-                    "role", role,
-                    "isLoggedIn", true
+                "id", id.toString(),
+                "email", email,
+                "name", name,
+                "role", role,
+                "isLoggedIn", true
             );
 
             return ResponseEntity.ok(userInfo);
@@ -146,8 +140,8 @@ public class MemberController {
     @Operation(summary = "refreshToken 검증 및 재발급")
     @GetMapping("/refresh")
     public Map<String, Object> refresh(
-            @CookieValue(value = "refreshToken") String refreshToken,
-            HttpServletResponse response) {
+        @CookieValue(value = "refreshToken") String refreshToken,
+        HttpServletResponse response) {
 
         log.info("refresh refreshToken: {}", refreshToken);
 
@@ -163,15 +157,19 @@ public class MemberController {
 
         log.info("RefreshToken claims: {}", claims);
 
-        String newAccessToken = jwtUtil.generateToken(claims, jwtProps.getAccessTokenExpirationPeriod());
+        String newAccessToken = jwtUtil.generateToken(claims,
+            jwtProps.getAccessTokenExpirationPeriod());
 
         String refreshToUse = refreshToken;
         if (checkTime((Integer) claims.get("exp"))) {
-            refreshToUse = jwtUtil.generateToken(claims, jwtProps.getRefreshTokenExpirationPeriod());
+            refreshToUse = jwtUtil.generateToken(claims,
+                jwtProps.getRefreshTokenExpirationPeriod());
         }
 
-        CookieUtil.setTokenCookie(response, "accessToken", newAccessToken, jwtProps.getAccessTokenExpirationPeriod());
-        CookieUtil.setTokenCookie(response, "refreshToken", refreshToUse, jwtProps.getRefreshTokenExpirationPeriod());
+        CookieUtil.setTokenCookie(response, "accessToken", newAccessToken,
+            jwtProps.getAccessTokenExpirationPeriod());
+        CookieUtil.setTokenCookie(response, "refreshToken", refreshToUse,
+            jwtProps.getRefreshTokenExpirationPeriod());
 
         return Map.of("success", true);
     }
