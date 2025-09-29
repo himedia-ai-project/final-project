@@ -43,7 +43,7 @@ public class ProductController {
         @Parameter(description = "제품 이름", required = true)
         @RequestParam String name,
         @Parameter(description = "업로드할 제품 이미지 (jpg, jpeg, png, webp 형식만 허용)")
-        @RequestParam MultipartFile image,
+        @RequestParam(required = false) MultipartFile image,
         Authentication authentication
     ) {
         if (!Objects.requireNonNull(file.getOriginalFilename()).endsWith(".pdf")) {

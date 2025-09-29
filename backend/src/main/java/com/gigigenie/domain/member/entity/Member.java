@@ -1,10 +1,20 @@
 package com.gigigenie.domain.member.entity;
 
 import com.gigigenie.domain.member.enums.MemberRole;
-import jakarta.persistence.*;
-import lombok.*;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "member")
@@ -14,6 +24,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Member {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id", nullable = false)
@@ -38,11 +49,6 @@ public class Member {
     @Column(name = "join_date", nullable = false)
     @Builder.Default
     private LocalDateTime joinDate = LocalDateTime.now();
-
-    public Member updateName(String name) {
-        this.name = name;
-        return this;
-    }
 
     public Member updateOAuth2Info(String provider, String providerId) {
         this.provider = provider;
