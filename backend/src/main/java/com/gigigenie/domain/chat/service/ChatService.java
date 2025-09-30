@@ -38,7 +38,6 @@ public class ChatService {
     public List<ChatMessage> processChat(ChatRequest request, Authentication authentication) {
         Member member = findMember(authentication);
         Product product = findProduct(request.getProductId());
-//        테스트중입니다
         //변수
         Integer memberId = member.getMemberId();
         Long productId = product.getId();
