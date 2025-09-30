@@ -42,7 +42,7 @@ public class ChatService {
         Integer memberId = member.getMemberId();
         Long productId = product.getId();
         String question = request.getQuestion();
-
+//        테스트
         //유저 메세지
         ChatMessage chatMessage = new ChatMessage("user", question);
         //유저 메세지 추가 + 이전 대화내용 불러오기
