@@ -4,12 +4,15 @@ import com.gigigenie.domain.product.dto.ProductResponse;
 import com.gigigenie.domain.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,7 +38,7 @@ public class ProductController {
         description = "PDF 업로드 → 텍스트 추출 → 임베딩 → vectorDB 저장 및 파일을 S3에 저장"
     )
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadPdf(
+    public ResponseEntity<String> uploadPdf(
         @Parameter(description = "업로드할 PDF 파일", required = true)
         @RequestParam MultipartFile file,
         @Parameter(description = "카테고리ID", required = true)
@@ -72,7 +75,17 @@ public class ProductController {
             }
         }
 
-        var result = productService.processPdf(file, categoryId, name, image, authentication);
+        String result = productService.processPdf(file, categoryId, name, image, authentication);
         return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "제품 사용 설명서 다운로드(PDF)")
+    @GetMapping("/{productId}/download")
+    public ResponseEntity<Void> downloadPdf(@PathVariable Long productId,
+        Authentication authentication) {
+        String url = productService.downloadPdf(productId, authentication);
+        return ResponseEntity.status(HttpStatus.FOUND)
+            .location(URI.create(url))
+            .build();
     }
 }

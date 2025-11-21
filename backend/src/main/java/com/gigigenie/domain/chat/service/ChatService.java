@@ -11,6 +11,7 @@ import com.gigigenie.domain.member.entity.Member;
 import com.gigigenie.domain.member.repository.MemberRepository;
 import com.gigigenie.domain.product.entity.Product;
 import com.gigigenie.domain.product.repository.ProductRepository;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -128,11 +129,11 @@ public class ChatService {
     private Member findMember(Authentication authentication) {
         MemberDTO memberDTO = (MemberDTO) authentication.getPrincipal();
         return memberRepository.findById(memberDTO.getId())
-            .orElseThrow(() -> new RuntimeException("Member not found"));
+            .orElseThrow(() -> new EntityNotFoundException("Member not found"));
     }
 
     private Product findProduct(Long productId) {
         return productRepository.findById(productId)
-            .orElseThrow(() -> new RuntimeException("Product not found"));
+            .orElseThrow(() -> new EntityNotFoundException("Product not found"));
     }
 }

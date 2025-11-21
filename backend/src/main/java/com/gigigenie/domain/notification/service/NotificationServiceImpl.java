@@ -6,6 +6,7 @@ import com.gigigenie.domain.member.repository.MemberRepository;
 import com.gigigenie.domain.notification.dto.NotificationDTO;
 import com.gigigenie.domain.notification.entity.Notification;
 import com.gigigenie.domain.notification.repository.NotificationRepository;
+import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -59,7 +60,7 @@ public class NotificationServiceImpl implements NotificationService {
     private Member findMember(Authentication authentication) {
         MemberDTO memberDTO = (MemberDTO) authentication.getPrincipal();
         return memberRepository.findById(memberDTO.getId())
-            .orElseThrow(() -> new RuntimeException("Member not found"));
+            .orElseThrow(() -> new EntityNotFoundException("Member not found"));
     }
-    
+
 }

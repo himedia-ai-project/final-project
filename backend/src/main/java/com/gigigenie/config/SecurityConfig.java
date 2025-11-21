@@ -3,6 +3,8 @@ package com.gigigenie.config;
 import com.gigigenie.domain.oauth.model.CustomOAuth2User;
 import com.gigigenie.domain.oauth.service.OAuth2Service;
 import com.gigigenie.security.filter.JWTCheckFilter;
+import com.gigigenie.security.handler.CustomAccessDeniedHandler;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -81,12 +83,21 @@ public class SecurityConfig {
                     new AntPathRequestMatcher("/api/chat/**"),
                     new AntPathRequestMatcher("/api/favorite/**"),
                     new AntPathRequestMatcher("/api/history/**")
-                ).hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                .requestMatchers(
-                    new AntPathRequestMatcher("/api/prompts/**")
-                ).hasRole("ADMIN")
-                .anyRequest().authenticated()
-            );
+                ).hasAnyRole("USER", "ADMIN")
+                .anyRequest().authenticated())
+            .exceptionHandling(e -> e
+                // 401: 인증 없음/실패
+                .authenticationEntryPoint((req, res, ex) -> {
+                    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    res.setContentType("application/json;charset=UTF-8");
+                    res.getWriter().print("{\"error\":\"인증 실패\"}");
+                })
+                // 403: 권한 없음
+                .accessDeniedHandler(new CustomAccessDeniedHandler())
+            )
+            // 폼/OAuth2 로그인은 API에서 비활성 (리다이렉트 방지)
+            .formLogin(AbstractHttpConfigurer::disable)
+            .oauth2Login(AbstractHttpConfigurer::disable);
 
         http.oauth2Login(oauth2 -> oauth2
             .userInfoEndpoint(userInfo -> userInfo

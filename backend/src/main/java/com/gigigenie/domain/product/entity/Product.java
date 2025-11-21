@@ -46,6 +46,9 @@ public class Product {
     @Column(name = "model_image")
     private String modelImage;
 
+    @Column(name = "model_key")
+    private String modelKey;
+
     @NotNull
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at", nullable = false)
